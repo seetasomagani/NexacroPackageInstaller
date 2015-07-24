@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<application xmlns="http://ns.adobe.com/air/application/2.7"> 
+    <id>com.nexaweb.NexacroPackageInstaller</id> 
+    <versionNumber>0.1</versionNumber> 
+    <filename>NexacroPackageInstaller</filename> 
+    <initialWindow> 
+        <content>NexacroPackageInstaller.html</content> 
+        <visible>true</visible> 
+        <width>600</width> 
+        <height>400</height> 
+    </initialWindow> 
+</application>

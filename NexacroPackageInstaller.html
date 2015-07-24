@@ -1,0 +1,71 @@
+<html> 
+<head> 
+    <script src="AIRAliases.js" type="text/javascript"></script>
+    <script src="AIRIntrospector.js" type="text/javascript"></script>
+    <script src="AIRLocalizer.js" type="text/javascript"></script>
+    <script src="AIRMenuBuilder.js" type="text/javascript"></script>
+    <script src="AIRSourceViewer.js" type="text/javascript"></script>
+    <script type="text/javascript"> 
+        function appLoad() { 
+            
+        } 
+        
+    </script>
+    <script>
+        function installJSON() {
+            var file = new air.File();
+            file.url = 'file:///C:/Program Files (x86)/nexacro/14/nexacro14lib/component/ComComp.json';
+
+            var fileStream = new air.FileStream(); 
+            fileStream.open(file, air.FileMode.UPDATE);
+            var str = fileStream.readUTFBytes(fileStream.bytesAvailable);
+            var config = JSON.parse(str);
+            var scripts = config.scripts;
+            var jsonExists = false;
+            
+            scripts.forEach(function(curScript) {
+                            if(curScript == "ComComp/JSONBinding.js")
+                                jsonExists = true;
+                            });
+            
+            if(!jsonExists) {
+                scripts.push("ComComp/JSONBinding.js");
+                //var noOfScripts = scripts.length;
+                //var lastScript = scripts[scripts.length - 1];
+            
+                fileStream.position = 0;
+                fileStream.truncate();
+                var outputStr = JSON.stringify(config, null, '  ');
+                fileStream.writeUTFBytes(outputStr);
+                    alert('JSON support added');
+            }
+        
+            fileStream.close();
+            
+            var codeFile = air.File.applicationDirectory;
+            codeFile = codeFile.resolvePath("JSONBinding.js");
+            var dest = new air.File();
+            dest.url = "file:///C:/Program Files (x86)/nexacro/14/nexacro14lib/component/ComComp/JSONBinding.js";
+            try {
+                codeFile.copyTo(dest, true);
+            } catch (error) {
+                alert("Error: " + error.message);   
+            }
+            //codeFile.close();
+            
+            //alert(codeFile);
+            
+        }
+    </script>
+    <title>Hello World</title> 
+</head> 
+<body onLoad="appLoad()"> 
+    <h1>Nexacro Package Installer</h1> 
+    <p>Install Widgets</p>
+    <button style="width:120px;height:50px" onclick="installJSON()">JSON package</button>
+    <button style="width:120px;height:50px">Google Maps</button>
+    <button style="width:120px;height:50px">VOIP</button>
+    <button style="width:120px;height:50px">FourSquare</button>
+    <button style="width:120px;height:50px">Open Weather</button>
+</body> 
+</html>
