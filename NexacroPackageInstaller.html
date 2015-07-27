@@ -45,6 +45,8 @@
                 var outputStr = JSON.stringify(config, null, '  ');
                 fileStream.writeUTFBytes(outputStr);
                     alert('JSON support added');
+            } else {
+                alert('JSONBinding installed already');   
             }
         
             fileStream.close();
@@ -90,21 +92,22 @@
         
         <div class="row">
             <div class="col-md-4 portfolio-item">
-                <h3>
-                    <a href="#" onclick="installJSON()">Add JSON Binding</a>
-                </h3>
+                    <div style="color:#333399;font-size:18pt">JSON Binding
+                        <img src="images/add-sign.png" style="height:32px;width:32px;cursor: pointer;" href="#" onclick="installJSON()"/>
+                    </div>
                 <p>Bind JSON data to your datasets</p>
             </div>
             <div class="col-md-4 portfolio-item">
-                <h3>
-                    <a href="#">Add Google Maps</a>
-                </h3>
+                
+                <div style="color:#333399;font-size:18pt">Google Maps
+                        <img src="images/add-sign.png" style="height:32px;width:32px;cursor: pointer;" href="#" onclick=""/>
+                    </div>
                 <p>Support use of Google Maps (not implemented yet)</p>
             </div>
             <div class="col-md-4 portfolio-item">
-                <h3>
-                    <a href="#">Add Firebase</a>
-                </h3>
+                <div style="color:#333399;font-size:18pt">Firebase
+                        <img src="images/add-sign.png" style="height:32px;width:32px;cursor: pointer;" href="#" onclick=""/>
+                    </div>
                 <p>Easily integrate with a Firebase instance (not implemented yet)</p>
             </div>
         </div>
