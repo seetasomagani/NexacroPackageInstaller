@@ -1,5 +1,12 @@
 <html> 
 <head> 
+    
+        <!-- Bootstrap Core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="css/3-col-portfolio.css" rel="stylesheet">
+        
     <!-- Scripts for debugging -->
     <script src="AIRIntrospector.js" type="text/javascript"></script>
     <script src="AIRLocalizer.js" type="text/javascript"></script>
@@ -8,10 +15,13 @@
     <script src="AIRMenuBuilder.js" type="text/javascript"></script>
     <script src="AIRAliases.js" type="text/javascript"></script>
     
+    <script src="jquery-1.11.2.min.js" type="text/javascript"></script>
+    
     <script>
         function installJSON() {
+            var installDir = $('#installDir').val()
             var file = new air.File();
-            file.url = 'file:///C:/Program Files (x86)/nexacro/14/nexacro14lib/component/ComComp.json';
+            file.url = installDir + 'component/ComComp.json';
 
             var fileStream = new air.FileStream(); 
             fileStream.open(file, air.FileMode.UPDATE);
@@ -40,9 +50,9 @@
             fileStream.close();
             
             var codeFile = air.File.applicationDirectory;
-            codeFile = codeFile.resolvePath("JSONBinding.js");
+            codeFile = codeFile.resolvePath("component/JSONBinding.js");
             var dest = new air.File();
-            dest.url = "file:///C:/Program Files (x86)/nexacro/14/nexacro14lib/component/ComComp/JSONBinding.js";
+            dest.url = installDir + "component/ComComp/JSONBinding.js";
             try {
                 codeFile.copyTo(dest, true);
             } catch (error) {
@@ -54,15 +64,51 @@
             
         }
     </script>
-    <title>Hello World</title> 
+    <title>Nexacro Package Installer</title> 
 </head> 
 <body> 
-    <h1>Nexacro Package Installer</h1> 
-    <p>Install Widgets</p>
-    <button style="width:120px;height:50px" onclick="installJSON()">JSON package</button>
-    <button style="width:120px;height:50px">Google Maps</button>
-    <button style="width:120px;height:50px">VOIP</button>
-    <button style="width:120px;height:50px">FourSquare</button>
-    <button style="width:120px;height:50px">Open Weather</button>
+    
+    <!-- Page Content -->
+    <div class="container">
+
+        <!-- Page Header -->
+        <div class="row">
+            <div class="col-lg-12">
+                <h1 class="page-header">Nexacro Package Installer<br/>
+                    <small></small>
+                    
+                </h1>
+            </div>
+        </div>
+        <!-- /.row -->
+        
+        <div class="row">
+            <div class="col-md-4 portfolio-item">
+                Nexacro installation directory on your PC: <input id="installDir" type="text" value="file:///C:/Program Files (x86)/nexacro/14/nexacro14lib/" style="width:500px"/>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-4 portfolio-item">
+                <h3>
+                    <a href="#" onclick="installJSON()">Add JSON Binding</a>
+                </h3>
+                <p>Bind JSON data to your datasets</p>
+            </div>
+            <div class="col-md-4 portfolio-item">
+                <h3>
+                    <a href="#">Add Google Maps</a>
+                </h3>
+                <p>Support use of Google Maps (not implemented yet)</p>
+            </div>
+            <div class="col-md-4 portfolio-item">
+                <h3>
+                    <a href="#">Add Firebase</a>
+                </h3>
+                <p>Easily integrate with a Firebase instance (not implemented yet)</p>
+            </div>
+        </div>
+    </div>
+    <p></p>
 </body> 
 </html>

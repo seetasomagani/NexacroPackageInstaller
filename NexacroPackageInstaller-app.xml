@@ -6,7 +6,7 @@
     <initialWindow> 
         <content>NexacroPackageInstaller.html</content> 
         <visible>true</visible> 
-        <width>600</width> 
-        <height>400</height> 
+        <width>800</width> 
+        <height>600</height> 
     </initialWindow> 
 </application>
