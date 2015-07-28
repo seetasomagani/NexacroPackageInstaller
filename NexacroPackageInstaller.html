@@ -18,7 +18,22 @@
     <script src="jquery-1.11.2.min.js" type="text/javascript"></script>
     
     <script>
+        function onload() {
+            var packageFile = air.File.applicationDirectory;
+            packageFile = packageFile.resolvePath("package.json");
+            
+            var fileStream = new air.FileStream(); 
+            fileStream.open(packageFile, air.FileMode.READ);
+            var str = fileStream.readUTFBytes(fileStream.bytesAvailable);
+            alert(str);
+            var scripts = JSON.parse(str);
+        }
+    </script>
+    
+    <script>
         function installJSON() {
+            alert(scripts);
+            
             var installDir = $('#installDir').val()
             var file = new air.File();
             file.url = installDir + 'component/ComComp.json';
@@ -26,6 +41,14 @@
             var fileStream = new air.FileStream(); 
             fileStream.open(file, air.FileMode.UPDATE);
             var str = fileStream.readUTFBytes(fileStream.bytesAvailable);
+            
+            var regex = new RegExp("//.*\.json");
+            var match = regex.exec(str);
+            
+            if(match) {
+                str = str.split(match[0])[0];
+            }
+            
             var config = JSON.parse(str);
             var scripts = config.scripts;
             var jsonExists = false;
@@ -59,16 +82,12 @@
                 codeFile.copyTo(dest, true);
             } catch (error) {
                 alert("Error: " + error.message);   
-            }
-            //codeFile.close();
-            
-            //alert(codeFile);
-            
+            }    
         }
     </script>
     <title>Nexacro Package Installer</title> 
 </head> 
-<body> 
+<body onload="onload()"> 
     
     <!-- Page Content -->
     <div class="container">
