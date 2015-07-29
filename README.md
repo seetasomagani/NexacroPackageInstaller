@@ -12,4 +12,4 @@ adt -package -storetype pkcs12 -keystore [path-to-sampleCert.pfx] NexacroPackage
 
 3) Build a .exe
 
-adt -package -target native NexacroPackageInstaller.exe NexacroPackageInstaller.air
+adt -package -storetype pkcs12 -keystore [path-to-sampleCert.pfx] -target native NexacroPackageInstaller.exe NexacroPackageInstaller.air
