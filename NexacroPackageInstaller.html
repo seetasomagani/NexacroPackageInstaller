@@ -18,72 +18,76 @@
     <script src="jquery-1.11.2.min.js" type="text/javascript"></script>
     
     <script>
-        function onload() {
+        
+        function onload() { // Read available scripts from package.json
+            
             var packageFile = air.File.applicationDirectory;
             packageFile = packageFile.resolvePath("package.json");
             
             var fileStream = new air.FileStream(); 
             fileStream.open(packageFile, air.FileMode.READ);
             var str = fileStream.readUTFBytes(fileStream.bytesAvailable);
-            alert(str);
-            var scripts = JSON.parse(str);
-        }
-    </script>
-    
-    <script>
-        function installJSON() {
-            alert(scripts);
-            
-            var installDir = $('#installDir').val()
-            var file = new air.File();
-            file.url = installDir + 'component/ComComp.json';
 
-            var fileStream = new air.FileStream(); 
+            window.packageScriptsMeta = JSON.parse(str); // TODO Make it local sometime
+            
+            fileStream.close();
+        }
+        
+        function installPackage(pkg) {
+            var packageMeta = packageScriptsMeta[pkg];
+            
+            // Read Loader for this package group
+            var installDir = $('#installDir').val();    // TODO ensure trailing slash
+            var file = new air.File();
+            file.url = installDir + packageMeta.scriptFile;
+            var fileStream = new air.FileStream();
             fileStream.open(file, air.FileMode.UPDATE);
             var str = fileStream.readUTFBytes(fileStream.bytesAvailable);
             
+            // Read the data that's above the comment line,
+            // so assuming that the useless comment is the last line
             var regex = new RegExp("//.*\.json");
             var match = regex.exec(str);
-            
             if(match) {
                 str = str.split(match[0])[0];
             }
             
+            // Parse loader and ensure package is not installed already
             var config = JSON.parse(str);
             var scripts = config.scripts;
             var jsonExists = false;
-            
             scripts.forEach(function(curScript) {
-                            if(curScript == "ComComp/JSONBinding.js")
-                                jsonExists = true;
-                            });
-            
-            if(!jsonExists) {
-                scripts.push("ComComp/JSONBinding.js");
-                //var noOfScripts = scripts.length;
-                //var lastScript = scripts[scripts.length - 1];
-            
-                fileStream.position = 0;
-                fileStream.truncate();
-                var outputStr = JSON.stringify(config, null, '  ');
-                fileStream.writeUTFBytes(outputStr);
-                    alert('JSON support added');
-            } else {
-                alert('JSONBinding installed already');   
+                if(curScript == packageMeta.script) {
+                    jsonExists = true;
+                }
+            });
+            if(jsonExists) {
+            alert('JSONBinding installed already');
+                fileStream.close();     // Close filestream to ensure its contents are not lost
+                return false;
             }
-        
+
+            // Add script to loader
+            scripts.push(packageMeta.script);
+            fileStream.position = 0;
+            fileStream.truncate();
+            var outputStr = JSON.stringify(config, null, '  ');
+            fileStream.writeUTFBytes(outputStr);
             fileStream.close();
-            
+                
+            // Copy script to the group directory
             var codeFile = air.File.applicationDirectory;
-            codeFile = codeFile.resolvePath("component/JSONBinding.js");
+            codeFile = codeFile.resolvePath(packageMeta.sourceFile);
             var dest = new air.File();
-            dest.url = installDir + "component/ComComp/JSONBinding.js";
+            dest.url = installDir + packageMeta.destFile;
             try {
                 codeFile.copyTo(dest, true);
+                alert(pkg + ' support added');
             } catch (error) {
-                alert("Error: " + error.message);   
-            }    
+                alert("Error: " + error.message);   // TODO revert the addition of script to Loader
+            } 
         }
+
     </script>
     <title>Nexacro Package Installer</title> 
 </head> 
@@ -112,7 +116,7 @@
         <div class="row">
             <div class="col-md-4 portfolio-item">
                     <div style="color:#333399;font-size:18pt">JSON Binding
-                        <img src="images/add-sign.png" style="height:32px;width:32px;cursor: pointer;" href="#" onclick="installJSON()"/>
+                        <img src="images/add-sign.png" style="height:32px;width:32px;cursor: pointer;" href="#" onclick="installPackage('json')"/>
                     </div>
                 <p>Bind JSON data to your datasets</p>
             </div>
