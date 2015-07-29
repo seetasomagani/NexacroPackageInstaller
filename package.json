@@ -2,6 +2,7 @@
     "json": {
 		"sourceFile" 	: "component/JSONBinding.js",
 		"destFile"	: "component/ComComp/JSONBinding.js",
+        "scriptFile" : "component/ComComp.json",
 		"script"	: "ComComp/JSONBinding.js"
 	}
 }
