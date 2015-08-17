@@ -74,14 +74,12 @@ nexacro.TransactionItem.prototype._deserializeData = function (strRecvData, bPen
         return this.__deserializePPX(strRecvData);
     }
 
-        // $JSON start
-    else if (this.datatype == 4) {
-
-        //var e = new Error('JSON construction');
-        //application.trace(e.stack);
+        // JSON start
+    else if (this.datatype == 4) 
+    {
         return this.__deserializeJSON(strRecvData);
     }
-        //$JSON end
+        //JSON end
 
     else // XML Type (HEX:3C,3F)
     {
@@ -112,7 +110,6 @@ nexacro.TransactionItem.prototype.__deserializeJSON = function (strRecvData, doc
     var message = "SUCCESS";
 
     var errorinfo = [code, message];
-    //doc = strRecvData.substring(4, strRecvData.length).trim();
     doc = strRecvData.trim();
     doc = JSON.parse(doc);
     var ret = nexacro._getCommDataFromObj(doc, this);
@@ -143,6 +140,7 @@ nexacro._getCommDataFromObj = function (doc, target) {
 }
 
 nexacro._queryJSON = function (obj, query) {
+    
     if (!query)
         return obj;
 
@@ -170,13 +168,13 @@ nexacro.Dataset.prototype.bindJSON = function (data) {
         data.forEach(function (currentValue) {
             var row = dataset.addRow();
             columns.forEach(function (curCol) {
-                dataset.setColumn(row, curCol.name, currentValue[curCol.name]);
+                dataset.setColumn(row, curCol.name, nexacro._queryJSON(currentValue, curCol.name));
             });
         });
     } else {
         var row = dataset.addRow();
         columns.forEach(function (curCol) {
-            dataset.setColumn(row, curCol.name, data[curCol.name]);
+            dataset.setColumn(row, curCol.name, nexacro._queryJSON(data, curCol.name));
         });
     }
 }
@@ -209,5 +207,140 @@ nexacro.Dataset.prototype.getData = function () {
         data[rowIndex] = this.getRow(rowIndex);
     }
     return data;
-}
-//JSONBinding v0.2
+};
+
+if (nexacro.Browser != "Runtime")
+nexacro.__startCommunication = function (loadItem, path, cachelevel, async, referer, senddata, ndatatype, compress, ver, failpass, service)
+        {
+            var _ajax;
+            if (loadItem.type == "data" && (nexacro._isHybrid && nexacro._isHybrid()) && ndatatype == 1)
+                _ajax = nexacro.__createFakeHttpRequest(ndatatype, compress);
+            else
+                _ajax = nexacro.__createHttpRequest();
+
+            var ajax_handle = _ajax._handle;
+
+            // parse protocol	    
+            if (path.indexOf("://") > -1)
+            {
+                var ar = path.split("://");
+                var protocol = ar[0];
+                switch (protocol)
+                {
+                    case "http": _ajax._protocol = 0; break;
+                    case "https": _ajax._protocol = 1; break;
+                    case "file": _ajax._protocol = 2; break;
+                    default: _ajax._protocol = -1; break;
+                }
+            }
+
+            var bindfn = null;
+            var method = "GET";
+            var mime_xml = false;
+            var mime_json = false;
+
+            if (loadItem.type == "module")
+            {
+                bindfn = nexacro.__bindLoadModuleHandler(_ajax, loadItem);
+            }
+            else if (loadItem.type == "data")
+            {
+                //$JSON start
+                if(ndatatype == 4) {
+                    bindfn = nexacro.__bindLoadDataHandler(_ajax, loadItem);
+                    mime_json = true;
+                    //$JSON end
+                } else {
+                    bindfn = nexacro.__bindLoadDataHandler(_ajax, loadItem);
+                    method = "POST";
+                    mime_xml = true;
+                }
+            }
+            else if (loadItem.type == "text")
+            {
+                bindfn = nexacro.__bindLoadTextHandler(_ajax, loadItem);
+            }
+            else  //for update
+            {
+                bindfn = nexacro.__bindLoadUpdateHandler(_ajax, loadItem);
+            }
+
+            if (async)
+                ajax_handle.onreadystatechange = bindfn;
+
+            try
+            {
+                ajax_handle.open(method, path, !!async);
+            }
+            catch (e)
+            {
+                loadItem.on_error(e.number, "comm_fail_loaddetail", e.number);
+                _ajax = null;
+                return null;
+            }
+
+            if (mime_xml)
+            {
+                ajax_handle.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+                ajax_handle.setRequestHeader("Accept", "application/xml, text/xml, */*");
+                ajax_handle.setRequestHeader("Content-Type","text/xml");                
+                //   ajax_handle.setRequestHeader("cache-control", "no-cache");
+            }
+
+            var header_vars = application._header_variables;
+            var header_vars_len = header_vars.length;
+            if (header_vars_len > 0)
+            {
+                var header_id, header_value;
+                for (var i = 0; i < header_vars_len; i++)
+                {
+                    header_id = header_vars[i];
+                    header_value = application[header_id];
+                    if (header_id && header_value)
+                        ajax_handle.setRequestHeader(header_id, header_value);
+                }
+            }
+
+            if (mime_xml && service)
+            {
+                if (service.cachelevel == "none")
+                {
+                    //$JSON start
+                    ajax_handle.setRequestHeader("cache-control", "no-cache, no-store");
+                    ajax_handle.setRequestHeader("Pragma", "no-cache");
+                    ajax_handle.setRequestHeader("If-Modified-Since", "Sat, 1 Jan 2000 00:00:00 GMT");
+                    ajax_handle.setRequestHeader("Expires", -1);
+                    //$JSON end
+                }
+                else
+                {
+                    ajax_handle.setRequestHeader("cache-control", "no-cache");
+                    ajax_handle.setRequestHeader("If-Modified-Since", loadItem.last_modified);
+                }
+            }
+
+            try
+            {
+                if (async)
+                {
+                    // httptimeout property use for only async
+                    if (ajax_handle.timeout) //no have property from made by activeObject, add check property by comnik 20150324
+                        ajax_handle.timeout = application.httptimeout * 1000;
+                }
+                ajax_handle.send(senddata ? senddata : null);
+                if (!async)
+                    bindfn(_ajax, loadItem);
+            }
+            catch (e)
+            {
+                if (_ajax._user_aborted)
+                    loadItem.on_error(e.number, "comm_stop_transaction_byesc");
+                else
+                    loadItem.on_error(e.number, "comm_fail_loaddetail", e.number);
+                return null;
+            }
+            ajax_handle = null;
+            return _ajax;
+        };
+
+//JSONBinding v0.3
